@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ExcelExporter = require('../utils/excelExporter');
+const ExcelExporter = require('./utils/excelExporter');
 
 // 导出基础信息
 router.post('/base-info', async (req, res) => {

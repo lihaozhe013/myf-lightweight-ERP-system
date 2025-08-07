@@ -214,9 +214,9 @@
 | POST | /api/export/analysis | Node.js Excel导出数据分析（分析汇总和详细数据），直接返回Excel文件流 |
 | POST | /api/export/analysis/advanced | Node.js Excel高级导出数据分析（按客户或产品分类的批量导出，多工作表），直接返回Excel文件流 |
 | GET | /api/export/status | 获取导出服务状态和可用导出类型 |
-| GET | /api/product-categories | 获取所有产品类型 |
-| POST | /api/product-categories | 新增产品类型（仅后端维护） |
-| DELETE | /api/product-categories/:name | 删除产品类型（仅后端维护） |
+| GET | /api/product-categories | **已废弃** - 使用data目录下的配置文件 frontend/src/config/appConfig.json |
+| POST | /api/product-categories | **已废弃** - 使用data目录下的配置文件 frontend/src/config/appConfig.json |
+| DELETE | /api/product-categories/:name | **已废弃** - 使用data目录下的配置文件 frontend/src/config/appConfig.json |
 | POST | /api/stock-rebuild/rebuild | **已废弃** - 改用 POST /api/stock/refresh |
 | GET | /api/receivable | 获取应收账款列表（分页/筛选/排序） |
 | POST | /api/receivable/payments | 新增回款记录 |
