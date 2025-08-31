@@ -38,7 +38,7 @@ router.post('/', (req, res) => {
   `;
   db.run(sql, [code, category, product_model, remark], function(err) {
     if (err) {
-      if (err.code === 'SQLITE_CONSTRAINT') {
+      if (db.isConstraintError(err)) {
         res.status(400).json({ error: '产品代号已存在' });
       } else {
         res.status(500).json({ error: err.message });
@@ -108,15 +108,15 @@ router.post('/bindings', (req, res) => {
     if (rows && rows.length) {
       return res.status(400).json({ error: '与现有数据冲突', conflicts: rows });
     }
-    // 插入/更新
-    const stmt = db.prepare('INSERT OR REPLACE INTO products (code, product_model) VALUES (?, ?)');
-    for (const b of bindings) {
-      stmt.run([b.code, b.product_model]);
-    }
-    stmt.finalize((err2) => {
-      if (err2) return res.status(500).json({ error: err2.message });
-      res.json({ message: '绑定成功' });
-    });
+    // 插入/更新（使用统一的 upsert 方法）
+    (async () => {
+      try {
+        await db.upsertProductBindings(bindings);
+        res.json({ message: '绑定成功' });
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    })();
   });
 });
 

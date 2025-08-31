@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const db = require('./db');
-const { ensureAllTablesAndColumns } = require('./utils/dbUpgrade');
+const { ensureAllTablesAndColumnsPortable } = require('./utils/schemaManager');
 const { logger } = require('./utils/logger');
 const { requestLogger, errorLogger } = require('./utils/loggerMiddleware');
 const { authenticateToken, getAuthConfig, checkWritePermission } = require('./utils/auth');
@@ -23,13 +23,17 @@ const HTTPS_PORT = process.env.HTTPS_PORT || (config.server && config.server.htt
 // =============================================================================
 
 // 启动时自动检查和升级数据库结构
-try {
-  ensureAllTablesAndColumns();
-  logger.info('数据库初始化完成');
-} catch (error) {
-  logger.error('数据库初始化失败', { error: error.message, stack: error.stack });
-  process.exit(1);
-}
+// 使用可移植的 Schema 管理
+(async () => {
+  try {
+    await ensureAllTablesAndColumnsPortable();
+    logger.info('数据库初始化完成 (多数据库兼容)');
+  } catch (error) {
+    logger.error('数据库初始化失败', { error: error.message, stack: error.stack });
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
+  }
+})();
 
 // =============================================================================
 // 中间件配置

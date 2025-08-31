@@ -257,22 +257,22 @@ router.post('/stats', (req, res) => {
               beforeMonthInbound: `
                 SELECT COALESCE(SUM(quantity), 0) as total
                 FROM inbound_records 
-                WHERE product_model = ? AND date(inbound_date) < ?
+                WHERE product_model = ? AND ${db.dateLessThan('inbound_date')}
               `,
               beforeMonthOutbound: `
                 SELECT COALESCE(SUM(quantity), 0) as total
                 FROM outbound_records 
-                WHERE product_model = ? AND date(outbound_date) < ?
+                WHERE product_model = ? AND ${db.dateLessThan('outbound_date')}
               `,
               monthlyInbound: `
                 SELECT COALESCE(SUM(quantity), 0) as total_inbound
                 FROM inbound_records 
-                WHERE product_model = ? AND date(inbound_date) >= ?
+                WHERE product_model = ? AND ${db.dateGreaterEqual('inbound_date')}
               `,
               monthlyOutbound: `
                 SELECT COALESCE(SUM(quantity), 0) as total_outbound
                 FROM outbound_records 
-                WHERE product_model = ? AND date(outbound_date) >= ?
+                WHERE product_model = ? AND ${db.dateGreaterEqual('outbound_date')}
               `
             };
             

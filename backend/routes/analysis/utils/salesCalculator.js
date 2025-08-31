@@ -11,7 +11,7 @@ const decimalCalc = require('../../../utils/decimalCalculator');
  */
 function calculateSalesData(startDate, endDate, customerCode, productModel, callback) {
   // 1. 构建销售额查询条件
-  let salesSqlConditions = ['unit_price >= 0', 'date(outbound_date) BETWEEN ? AND ?'];
+  let salesSqlConditions = ['unit_price >= 0', db.dateBetween('outbound_date', '?', '?')];
   let salesParams = [startDate, endDate];
   
   if (customerCode && customerCode !== 'All') {
@@ -31,7 +31,7 @@ function calculateSalesData(startDate, endDate, customerCode, productModel, call
         SELECT SUM(ABS(quantity * unit_price)) 
         FROM outbound_records 
         WHERE unit_price < 0 
-          AND date(outbound_date) BETWEEN ? AND ?
+          AND ${db.dateBetween('outbound_date', '?', '?')}
           ${customerCode && customerCode !== 'All' ? 'AND customer_code = ?' : ''}
           ${productModel && productModel !== 'All' ? 'AND product_model = ?' : ''}
       ), 0) as special_expense

@@ -42,6 +42,7 @@
 - **财务计算**: 必读 [精确计算架构](./decimal-calculation.md)
 - **数据导出**: 参考 [导出功能架构](./export-features.md)
 - **数据分析**: 查看 [数据分析功能](./analysis-features.md)
+- **数据库兼容**: 后端已支持 SQLite / PostgreSQL / MySQL，可在 data/appConfig.json 的 database 节配置，详见“后端多数据库兼容”一节。
 
 ## 📋 开发规范
 
@@ -75,3 +76,14 @@
 ---
 
 *本文档目录最后更新: 2025年8月*
+
+## 后端多数据库兼容（新增）
+
+- 适配层：使用 Knex 提供统一查询接口（db.all/db.get/db.run）与部分高级方法（如 upsertProductBindings）。
+- 支持数据库：SQLite（默认）、PostgreSQL、MySQL。
+- 配置位置：data/appConfig.json 的 database 节，可切换 type 为 sqlite/postgres/mysql，并配置连接参数。
+- 表结构：由 backend/utils/schemaManager.js 在服务启动时确保创建/补全，跨数据库可移植。
+- 注意事项：
+	- 需要在 backend 目录安装相应驱动（已在 package.json 添加依赖）。
+	- PostgreSQL 下如需返回插入的 id，请在 SQL 中显式使用 RETURNING id；现有代码在多数场景不依赖 lastID。
+	- 复杂查询中使用了 SQLite 的 date() 函数，如需完全兼容，请在后续迭代中替换为跨库表达式或改为参数预处理。

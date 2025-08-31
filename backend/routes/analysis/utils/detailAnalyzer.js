@@ -42,7 +42,7 @@ function calculateDetailAnalysis(startDate, endDate, customerCode, productModel,
       SUM(CASE WHEN unit_price >= 0 THEN quantity * unit_price ELSE 0 END) as normal_sales,
       SUM(CASE WHEN unit_price < 0 THEN ABS(quantity * unit_price) ELSE 0 END) as special_expense
     FROM outbound_records 
-    WHERE date(outbound_date) BETWEEN ? AND ?
+    WHERE ${db.dateBetween('outbound_date', '?', '?')}
       AND ${filterField} = ?
     GROUP BY ${groupField}
     HAVING normal_sales > 0 OR special_expense > 0

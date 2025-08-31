@@ -44,7 +44,7 @@ router.post('/', (req, res) => {
   `;
   db.run(sql, [code, short_name, full_name, address, contact_person, contact_phone, type], function(err) {
     if (err) {
-      if (err.code === 'SQLITE_CONSTRAINT') {
+      if (db.isConstraintError(err)) {
         res.status(400).json({ error: '客户/供应商代号或简称已存在' });
       } else {
         res.status(500).json({ error: err.message });
@@ -123,15 +123,15 @@ router.post('/bindings', (req, res) => {
       // 找到冲突项
       return res.status(400).json({ error: '与现有数据冲突', conflicts: rows });
     }
-    // 插入/更新
-    const stmt = db.prepare('INSERT OR REPLACE INTO partners (code, short_name, full_name) VALUES (?, ?, ?)');
-    for (const b of bindings) {
-      stmt.run([b.code, b.short_name, b.full_name]);
-    }
-    stmt.finalize((err2) => {
-      if (err2) return res.status(500).json({ error: err2.message });
-      res.json({ message: '绑定成功' });
-    });
+    // 插入/更新（使用统一的 upsert 方法）
+    (async () => {
+      try {
+        await db.upsertPartnerBindings(bindings);
+        res.json({ message: '绑定成功' });
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    })();
   });
 });
 

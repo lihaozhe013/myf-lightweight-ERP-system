@@ -25,7 +25,7 @@ function calculateFilteredSoldGoodsCost(startDate, endDate, customerCode, produc
   }
   
   // 添加时间区间条件
-  whereConditions.push('date(outbound_date) BETWEEN ? AND ?');
+  whereConditions.push(db.dateBetween('outbound_date', '?', '?'));
   params.push(startDate, endDate);
   
   // 2. 计算每个产品的加权平均入库价格（全时间范围，只计算正数单价）
@@ -92,7 +92,7 @@ function calculateFilteredSoldGoodsCost(startDate, endDate, customerCode, produc
       }
       
       // 特殊收入也按时间区间计算
-      specialIncomeConditions.push('date(inbound_date) BETWEEN ? AND ?');
+      specialIncomeConditions.push(db.dateBetween('inbound_date', '?', '?'));
       specialIncomeParams.push(startDate, endDate);
       
       const specialIncomeSql = `
