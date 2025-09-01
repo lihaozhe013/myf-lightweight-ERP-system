@@ -3,27 +3,34 @@ const router = express.Router();
 const db = require('../db');
 const decimalCalc = require('../utils/decimalCalculator');
 
+// 工具函数：判断查询参数是否有效（排除 '', 'null', 'undefined' 字符串）
+function isProvided(val) {
+  return !(val === undefined || val === null || val === '' || val === 'null' || val === 'undefined');
+}
+
 // 获取出库记录列表
 router.get('/', (req, res) => {
   let { page = 1 } = req.query;
+  page = parseInt(page, 10);
+  if (!Number.isFinite(page) || page < 1) page = 1;
   const limit = 10; // 固定每页10条
   
   let sql = 'SELECT * FROM outbound_records WHERE 1=1';
   let params = [];
   
-  if (req.query.customer_short_name) {
+  if (isProvided(req.query.customer_short_name)) {
     sql += ' AND customer_short_name LIKE ?';
     params.push(`%${req.query.customer_short_name}%`);
   }
-  if (req.query.product_model) {
+  if (isProvided(req.query.product_model)) {
     sql += ' AND product_model LIKE ?';
     params.push(`%${req.query.product_model}%`);
   }
-  if (req.query.start_date) {
+  if (isProvided(req.query.start_date)) {
     sql += ' AND outbound_date >= ?';
     params.push(req.query.start_date);
   }
-  if (req.query.end_date) {
+  if (isProvided(req.query.end_date)) {
     sql += ' AND outbound_date <= ?';
     params.push(req.query.end_date);
   }
@@ -38,7 +45,7 @@ router.get('/', (req, res) => {
 
   const offset = (page - 1) * limit;
   sql += ' LIMIT ? OFFSET ?';
-  params.push(limit, parseInt(offset));
+  params.push(limit, offset);
 
   db.all(sql, params, (err, rows) => {
     if (err) {
@@ -47,19 +54,19 @@ router.get('/', (req, res) => {
     }
     let countSql = 'SELECT COUNT(*) as total FROM outbound_records WHERE 1=1';
     let countParams = [];
-    if (req.query.customer_short_name) {
+  if (isProvided(req.query.customer_short_name)) {
       countSql += ' AND customer_short_name LIKE ?';
       countParams.push(`%${req.query.customer_short_name}%`);
     }
-    if (req.query.product_model) {
+  if (isProvided(req.query.product_model)) {
       countSql += ' AND product_model LIKE ?';
       countParams.push(`%${req.query.product_model}%`);
     }
-    if (req.query.start_date) {
+  if (isProvided(req.query.start_date)) {
       countSql += ' AND outbound_date >= ?';
       countParams.push(req.query.start_date);
     }
-    if (req.query.end_date) {
+  if (isProvided(req.query.end_date)) {
       countSql += ' AND outbound_date <= ?';
       countParams.push(req.query.end_date);
     }
@@ -71,7 +78,7 @@ router.get('/', (req, res) => {
       res.json({
         data: rows,
         pagination: {
-          page: parseInt(page),
+          page: page,
           limit: limit,
           total: countResult.total,
           pages: Math.ceil(countResult.total / limit)
