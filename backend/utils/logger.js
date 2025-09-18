@@ -24,12 +24,12 @@ const logger = winston.createLogger({
 
 // 生产环境配置文件日志
 if (process.env.NODE_ENV === 'production') {
-  // 应用日志
+  // 应用日志 - 只记录warn及以上级别
   logger.add(new winston.transports.File({
     filename: path.join(logDir, 'app.log'),
-    level: 'info',
-    maxsize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 10,
+    level: 'warn',
+    maxsize: 5 * 1024 * 1024, // 5MB
+    maxFiles: 5,
     tailable: true
   }));
 
@@ -37,29 +37,13 @@ if (process.env.NODE_ENV === 'production') {
   logger.add(new winston.transports.File({
     filename: path.join(logDir, 'error.log'),
     level: 'error',
-    maxsize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 10,
+    maxsize: 5 * 1024 * 1024, // 5MB
+    maxFiles: 5,
     tailable: true
   }));
 
-  // 访问日志
-  logger.add(new winston.transports.File({
-    filename: path.join(logDir, 'access.log'),
-    level: 'info',
-    maxsize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 10,
-    tailable: true,
-    format: winston.format.combine(
-      winston.format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss'
-      }),
-      winston.format.printf(({ timestamp, level, message, ...meta }) => {
-        return `${timestamp} [${level.toUpperCase()}] ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ''}`;
-      })
-    )
-  }));
-
   console.log(`生产环境日志已配置 - 日志目录: ${logDir}`);
+  console.log('🔕 已优化日志配置: 减少静态文件和无关请求的记录');
 } else {
   // 开发环境只输出到控制台
   logger.add(new winston.transports.Console({
@@ -73,7 +57,7 @@ if (process.env.NODE_ENV === 'production') {
   }));
 }
 
-// 创建访问日志记录器
+// 创建访问日志记录器 - 仅记录API请求
 const accessLogger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -90,8 +74,8 @@ const accessLogger = winston.createLogger({
 if (process.env.NODE_ENV === 'production') {
   accessLogger.add(new winston.transports.File({
     filename: path.join(logDir, 'access.log'),
-    maxsize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 10,
+    maxsize: 3 * 1024 * 1024, // 3MB
+    maxFiles: 3,
     tailable: true
   }));
 } else {
